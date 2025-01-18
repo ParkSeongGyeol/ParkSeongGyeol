@@ -5,42 +5,87 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Brewery Dashboard</title>
     <link rel="stylesheet" href="/static/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="header">
-        <h1>🍺 Smart Brewery Data Dashboard</h1>
+    <!-- 사이드바 -->
+    <div class="sidebar">
+        <div class="logo">
+            <h1>Smart Brewery</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#" class="active">Dashboard</a></li>
+                <li><a href="#">Fermentation</a></li>
+                <li><a href="#">Environment</a></li>
+                <li><a href="#">Data Logs</a></li>
+                <li><a href="#">Settings</a></li>
+            </ul>
+        </nav>
     </div>
 
-    <div class="container">
-        <div class="controls">
-            <button id="fetch-data">📊 Fetch Latest Data</button>
-        </div>
+    <!-- 메인 컨텐츠 -->
+    <div class="main">
+        <header>
+            <h2>Smart Brewery Dashboard</h2>
+        </header>
 
-        <div class="chart-container">
-            <h2>📈 Real-Time Data Trends</h2>
-            <canvas id="dataChart"></canvas>
-        </div>
+        <div class="content">
+            <!-- 통계 -->
+            <section class="stats">
+                <div class="stat-card">
+                    <h3>Temperature</h3>
+                    <p id="temperature">0°C</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Humidity</h3>
+                    <p id="humidity">0%</p>
+                </div>
+                <div class="stat-card">
+                    <h3>CO₂</h3>
+                    <p id="co2">0 ppm</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Fermentation Progress</h3>
+                    <p id="progress">0%</p>
+                </div>
+            </section>
 
-        <div class="logs">
-            <h2>🗂 Data Logs</h2>
-            <table id="data-table">
-                <thead>
-                    <tr>
-                        <th>Timestamp</th>
-                        <th>Temperature (°C)</th>
-                        <th>Humidity (%)</th>
-                        <th>Air Quality</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Data dynamically loaded here -->
-                </tbody>
-            </table>
+            <!-- 그래프 -->
+            <section class="charts">
+                <div class="chart-container">
+                    <h3>Environment Data</h3>
+                    <canvas id="envChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Fermentation Progress</h3>
+                    <canvas id="progressChart"></canvas>
+                </div>
+            </section>
+
+            <!-- 데이터 로그 -->
+            <section class="logs">
+                <h3>Data Logs</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Temperature</th>
+                            <th>Humidity</th>
+                            <th>CO₂</th>
+                            <th>Density</th>
+                            <th>Alcohol</th>
+                            <th>Sugar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-table">
+                        <!-- Data dynamically loaded -->
+                    </tbody>
+                </table>
+            </section>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/static/script.js"></script>
 </body>
 </html>

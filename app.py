@@ -14,7 +14,7 @@ def get_db_connection():
 # 데이터베이스 초기화
 def init_db():
     if not os.path.exists('data'):
-        os.mkdir('data')  # 'data' 폴더가 없으면 생성
+        os.mkdir('data')  # 'data' 폴더 생성
     conn = sqlite3.connect('data/database.db')
     cursor = conn.cursor()
     cursor.execute('''
@@ -23,7 +23,10 @@ def init_db():
             timestamp TEXT,
             temperature REAL,
             humidity REAL,
-            air_quality TEXT
+            co2 INTEGER,
+            density REAL,
+            alcohol REAL,
+            sugar REAL
         )
     ''')
     conn.commit()
@@ -39,14 +42,17 @@ def save_data():
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     temperature = data.get('temperature')
     humidity = data.get('humidity')
-    air_quality = data.get('air_quality')
+    co2 = data.get('co2')
+    density = data.get('density')
+    alcohol = data.get('alcohol')
+    sugar = data.get('sugar')
 
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('''
-        INSERT INTO environment (timestamp, temperature, humidity, air_quality)
-        VALUES (?, ?, ?, ?)
-    ''', (timestamp, temperature, humidity, air_quality))
+        INSERT INTO environment (timestamp, temperature, humidity, co2, density, alcohol, sugar)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ''', (timestamp, temperature, humidity, co2, density, alcohol, sugar))
     conn.commit()
     conn.close()
 
@@ -60,10 +66,9 @@ def get_data():
     rows = cursor.fetchall()
     conn.close()
 
-    data = [{"id": row["id"], "timestamp": row["timestamp"], "temperature": row["temperature"],
-             "humidity": row["humidity"], "air_quality": row["air_quality"]} for row in rows]
+    data = [dict(row) for row in rows]
     return jsonify(data), 200
 
 if __name__ == '__main__':
-    init_db()  # 데이터베이스 초기화
+    init_db()
     app.run(debug=True)
