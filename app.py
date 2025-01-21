@@ -36,6 +36,22 @@ def init_db():
 def index():
     return render_template('index.html')
 
+@app.route('/fermentation')
+def fermentation():
+    return render_template('fermentation.html')
+
+@app.route('/environment')
+def environment():
+    return render_template('environment.html')
+
+@app.route('/data-logs')
+def data_logs():
+    return render_template('data_logs.html')
+
+@app.route('/settings')
+def settings():
+    return render_template('settings.html')
+
 @app.route('/api/data', methods=['POST'])
 def save_data():
     data = request.json
