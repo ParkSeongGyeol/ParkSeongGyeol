@@ -4,25 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Logs</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
 </head>
-<body>
-    <div class="sidebar">
-        <h1>Smart Distillery</h1>
-        <ul>
-            <li><a href="/">Dashboard</a></li>
-            <li><a href="/fermentation">Fermentation</a></li>
-            <li><a href="/environment">Environment</a></li>
-            <li><a href="/data-logs" class="active">Data Logs</a></li>
-            <li><a href="/settings">Settings</a></li>
-        </ul>
-    </div>
-    <div class="main">
-        <header>
-            <h2>Data Logs</h2>
-        </header>
-        <div class="content">
-            <p>This is the Data Logs page. Add data logs-related content here.</p>
+<body class="bg-light">
+    <div class="d-flex">
+        <!-- 사이드바 -->
+        <div class="sidebar bg-dark text-light p-3">
+            <h2 class="text-center mb-4">Smart Distillery</h2>
+            <ul class="nav flex-column">
+                <li class="nav-item mb-2"><a href="/" class="nav-link text-light"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li class="nav-item mb-2"><a href="/fermentation" class="nav-link text-light"><i class="fas fa-flask"></i> Fermentation</a></li>
+                <li class="nav-item mb-2"><a href="/environment" class="nav-link text-light"><i class="fas fa-cloud"></i> Environment</a></li>
+                <li class="nav-item mb-2"><a href="/data-logs" class="nav-link text-light active"><i class="fas fa-table"></i> Data Logs</a></li>
+                <li class="nav-item"><a href="/settings" class="nav-link text-light"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>
+        </div>
+
+        <!-- 메인 컨텐츠 -->
+        <div class="main flex-grow-1 p-4">
+            <header class="mb-4">
+                <h1 class="text-center">Data Logs</h1>
+            </header>
+            <div class="content">
+                <p class="text-center">This is the Data Logs page. Add data logs-related content here.</p>
+            </div>
         </div>
     </div>
 </body>

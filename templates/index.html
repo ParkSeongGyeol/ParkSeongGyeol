@@ -4,70 +4,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Distillery Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="/static/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <!-- 사이드바 -->
-    <div class="sidebar">
-        <div class="logo">
-            <h1>Smart Distillery</h1>
-        </div>
-        <nav>
-            <ul>
-                <li><a href="/" class="active">Dashboard</a></li>
-                <li><a href="/fermentation">Fermentation</a></li>
-                <li><a href="/environment">Environment</a></li>
-                <li><a href="/data-logs">Data Logs</a></li>
-                <li><a href="/settings">Settings</a></li>
+    <div class="d-flex">
+        <div class="sidebar bg-dark text-light p-3">
+            <h2 class="text-center mb-4">Smart Distillery</h2>
+            <ul class="nav flex-column">
+                <li class="nav-item mb-2"><a href="/" class="nav-link text-light"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li class="nav-item mb-2"><a href="/fermentation" class="nav-link text-light"><i class="fas fa-flask"></i> Fermentation</a></li>
+                <li class="nav-item mb-2"><a href="/environment" class="nav-link text-light"><i class="fas fa-cloud"></i> Environment</a></li>
+                <li class="nav-item mb-2"><a href="/data-logs" class="nav-link text-light"><i class="fas fa-table"></i> Data Logs</a></li>
+                <li class="nav-item"><a href="/settings" class="nav-link text-light"><i class="fas fa-cog"></i> Settings</a></li>
             </ul>
-        </nav>        
-    </div>
+        </div>
 
-    <!-- 메인 컨텐츠 -->
-    <div class="main">
-        <header>
-            <h2>Smart Distillery Dashboard</h2>
-        </header>
+        <div class="main flex-grow-1 p-4">
+            <header class="mb-4">
+                <h1 class="text-center">Smart Distillery Dashboard</h1>
+            </header>
 
-        <div class="content">
-            <!-- 통계 -->
-            <section class="stats">
-                <div class="stat-card">
-                    <h3>Temperature</h3>
-                    <p id="temperature">0°C</p>
+            <!-- 설정된 값 및 실시간 값 비교 -->
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-header bg-primary text-white">Target Temperature</div>
+                        <div class="card-body">
+                            <h3 class="card-title">{{ settings.temperature }} °C</h3>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <h3>Humidity</h3>
-                    <p id="humidity">0%</p>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-header bg-secondary text-white">Target Humidity</div>
+                        <div class="card-body">
+                            <h3 class="card-title">{{ settings.humidity }} %</h3>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <h3>CO₂</h3>
-                    <p id="co2">0 ppm</p>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-header bg-success text-white">Target CO₂</div>
+                        <div class="card-body">
+                            <h3 class="card-title">{{ settings.co2 }} ppm</h3>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <h3>Fermentation Progress</h3>
-                    <p id="progress">0%</p>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-header bg-warning text-white">Initial Sugar</div>
+                        <div class="card-body">
+                            <h3 class="card-title">{{ settings.sugar }} Brix</h3>
+                        </div>
+                    </div>
                 </div>
-            </section>
+            </div>
 
-            <!-- 그래프 -->
-            <section class="charts">
-                <div class="chart-container">
-                    <h3>Environment Data</h3>
-                    <canvas id="envChart"></canvas>
+            <!-- 차트 섹션 -->
+            <div class="mt-5">
+                <h3>Real-Time Data</h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <canvas id="envChart"></canvas>
+                    </div>
+                    <div class="col-md-6">
+                        <canvas id="progressChart"></canvas>
+                    </div>
                 </div>
-                <div class="chart-container">
-                    <h3>Fermentation Progress</h3>
-                    <canvas id="progressChart"></canvas>
-                </div>
-            </section>
+            </div>
 
             <!-- 데이터 로그 -->
-            <section class="logs">
+            <div class="mt-5">
                 <h3>Data Logs</h3>
-                <table>
-                    <thead>
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
                         <tr>
                             <th>Timestamp</th>
                             <th>Temperature</th>
@@ -82,10 +95,11 @@
                         <!-- Data dynamically loaded -->
                     </tbody>
                 </table>
-            </section>
+            </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/static/script.js"></script>
 </body>
 </html>

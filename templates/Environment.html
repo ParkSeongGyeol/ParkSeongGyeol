@@ -3,27 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Environment</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Environment Data</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
-    <div class="sidebar">
-        <h1>Smart Distillery</h1>
-        <ul>
-            <li><a href="/">Dashboard</a></li>
-            <li><a href="/fermentation">Fermentation</a></li>
-            <li><a href="/environment" class="active">Environment</a></li>
-            <li><a href="/data-logs">Data Logs</a></li>
-            <li><a href="/settings">Settings</a></li>
-        </ul>
-    </div>
-    <div class="main">
-        <header>
-            <h2>Environment</h2>
-        </header>
-        <div class="content">
-            <p>This is the Environment page. Add environment-related content here.</p>
+<body class="bg-light">
+    <div class="d-flex">
+        <!-- 사이드바 -->
+        <div class="sidebar bg-dark text-light p-3">
+            <h2 class="text-center mb-4">Smart Distillery</h2>
+            <ul class="nav flex-column">
+                <li class="nav-item mb-2"><a href="/" class="nav-link text-light"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li class="nav-item mb-2"><a href="/fermentation" class="nav-link text-light"><i class="fas fa-flask"></i> Fermentation</a></li>
+                <li class="nav-item mb-2"><a href="/environment" class="nav-link text-light active"><i class="fas fa-cloud"></i> Environment</a></li>
+                <li class="nav-item mb-2"><a href="/data-logs" class="nav-link text-light"><i class="fas fa-table"></i> Data Logs</a></li>
+                <li class="nav-item"><a href="/settings" class="nav-link text-light"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>
+        </div>
+
+        <!-- 메인 컨텐츠 -->
+        <div class="main flex-grow-1 p-4">
+            <header class="mb-4">
+                <h1 class="text-center">Filtered Environment Data</h1>
+            </header>
+            <table class="table table-striped mt-4">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Temperature (Filtered)</th>
+                        <th>Humidity (Filtered)</th>
+                        <th>CO₂ (Filtered)</th>
+                        <th>Density</th>
+                        <th>Alcohol</th>
+                        <th>Sugar</th>
+                    </tr>
+                </thead>
+                <tbody id="data-table">
+                    <!-- 데이터가 동적으로 추가됩니다 -->
+                </tbody>
+            </table>
+
+            <h2 class="mt-5">Charts</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <canvas id="lineChart"></canvas>
+                </div>
+                <div class="col-md-6">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
+    <script src="/static/script.js"></script>
 </body>
 </html>
