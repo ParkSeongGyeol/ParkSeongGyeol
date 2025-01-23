@@ -1,74 +1,179 @@
+/* Body 및 폰트 */
 body {
     font-family: 'Roboto', sans-serif;
-    background-color: #f8f9fa;
-    color: #343a40;
     margin: 0;
     padding: 0;
+    background-color: #f4f7fc; /* 밝고 부드러운 배경색 */
+    display: flex;
+    color: #333;
+}
+
+/* 사이드바 스타일 */
+.sidebar {
+    width: 250px;
+    background: linear-gradient(180deg, #343a40, #212529); /* 그라데이션 */
+    color: white;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* 사이드바 그림자 */
+}
+
+.sidebar .logo {
+    font-size: 24px;
+    text-align: center;
+    padding: 20px 0;
+    font-weight: bold;
+    background: #212529;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e9ecef;
+}
+
+.sidebar nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.sidebar nav ul li {
+    padding: 10px 0;
+}
+
+.sidebar nav ul li a {
+    text-decoration: none;
+    color: #ced4da;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar nav ul li a i {
+    margin-right: 10px;
+}
+
+.sidebar nav ul li a.active, .sidebar nav ul li a:hover {
+    background: #495057;
+    color: white;
+}
+
+/* 메인 컨텐츠 */
+.main {
+    margin-left: 250px;
+    padding: 20px;
+    flex: 1;
+    width: calc(100% - 250px);
+    background-color: #f4f7fc;
+    min-height: 100vh;
+}
+
+header {
+    background: #ffffff;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
 
-.header {
-    background-color: #007bff;
-    color: white;
-    padding: 20px 0;
+header h2 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: bold;
+    color: #495057;
 }
 
-.container {
-    max-width: 1000px;
-    margin: 20px auto;
+/* 통계 카드 */
+.stats {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.stat-card {
+    flex: 1;
+    background: linear-gradient(145deg, #ffffff, #e6e6e6); /* 부드러운 그라데이션 */
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.1), -4px -4px 8px rgba(255, 255, 255, 0.5);
     padding: 20px;
-    background-color: white;
+    border-radius: 15px;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px); /* 카드 상승 효과 */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.stat-card h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #6c757d;
+}
+
+.stat-card p {
+    margin: 10px 0 0;
+    font-size: 32px;
+    font-weight: bold;
+    color: #343a40;
+}
+
+/* 차트 */
+.chart-container {
+    background: #ffffff;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-}
-
-h1, h2 {
-    margin: 10px 0;
-}
-
-.controls {
     margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 15px;
 }
 
+/* 데이터 로그 테이블 */
+.logs table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #ffffff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.logs table th, .logs table td {
+    text-align: center;
+    padding: 12px;
+    border: 1px solid #dee2e6;
+}
+
+.logs table th {
+    background-color: #495057;
+    color: #ffffff;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.logs table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.logs table tbody tr:hover {
+    background-color: #e9ecef;
+}
+
+/* 버튼 스타일 */
 button {
-    background-color: #28a745;
-    color: white;
-    border: none;
+    display: inline-block;
     padding: 10px 20px;
     font-size: 16px;
-    border-radius: 5px;
+    color: #ffffff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 8px;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, transform 0.2s;
 }
 
 button:hover {
-    background-color: #218838;
-}
-
-.chart-container {
-    margin: 20px 0;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
-}
-
-table th, table td {
-    padding: 10px;
-    text-align: center;
-}
-
-table th {
-    background-color: #007bff;
-    color: white;
-}
-
-table tbody tr:nth-child(even) {
-    background-color: #f2f2f2;
-}
-
-table tbody tr:hover {
-    background-color: #d1ecf1;
+    background-color: #0056b3;
+    transform: scale(1.05); /* 살짝 확대 */
 }

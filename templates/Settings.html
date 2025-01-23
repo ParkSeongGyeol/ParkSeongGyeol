@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- 사이드바 -->
+        <div class="sidebar bg-dark text-light p-3">
+            <h2 class="text-center mb-4">Smart Distillery</h2>
+            <ul class="nav flex-column">
+                <li class="nav-item mb-2"><a href="/" class="nav-link text-light"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li class="nav-item mb-2"><a href="/fermentation" class="nav-link text-light"><i class="fas fa-flask"></i> Fermentation</a></li>
+                <li class="nav-item mb-2"><a href="/environment" class="nav-link text-light"><i class="fas fa-cloud"></i> Environment</a></li>
+                <li class="nav-item mb-2"><a href="/data-logs" class="nav-link text-light"><i class="fas fa-table"></i> Data Logs</a></li>
+                <li class="nav-item"><a href="/settings" class="nav-link text-light active"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>
+        </div>
+
+        <!-- 메인 컨텐츠 -->
+        <div class="main flex-grow-1 p-4">
+            <header class="mb-4">
+                <h1 class="text-center">Settings</h1>
+            </header>
+            <form action="/settings" method="POST" class="form-container">
+                <div class="mb-3">
+                    <label for="temperature" class="form-label">Target Temperature (°C)</label>
+                    <input type="number" class="form-control" id="temperature" name="temperature" value="{{ settings.temperature }}" step="0.1" required>
+                </div>
+                <div class="mb-3">
+                    <label for="humidity" class="form-label">Target Humidity (%)</label>
+                    <input type="number" class="form-control" id="humidity" name="humidity" value="{{ settings.humidity }}" step="1" required>
+                </div>
+                <div class="mb-3">
+                    <label for="co2" class="form-label">Target CO₂ (ppm)</label>
+                    <input type="number" class="form-control" id="co2" name="co2" value="{{ settings.co2 }}" step="10" required>
+                </div>
+                <div class="mb-3">
+                    <label for="sugar" class="form-label">Initial Sugar (Brix)</label>
+                    <input type="number" class="form-control" id="sugar" name="sugar" value="{{ settings.sugar }}" step="0.1" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Settings</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
