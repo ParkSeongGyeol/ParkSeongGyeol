@@ -26,6 +26,8 @@
             <header class="mb-4">
                 <h1 class="text-center">Filtered Environment Data</h1>
             </header>
+            
+            <!-- 📌 실시간 데이터 테이블 -->
             <table class="table table-striped mt-4">
                 <thead class="table-dark">
                     <tr>
@@ -46,14 +48,89 @@
             <h2 class="mt-5">Charts</h2>
             <div class="row">
                 <div class="col-md-6">
-                    <canvas id="lineChart"></canvas>
+                    <canvas id="temperatureChart"></canvas>
                 </div>
                 <div class="col-md-6">
-                    <canvas id="barChart"></canvas>
+                    <canvas id="humidityChart"></canvas>
+                </div>
+                <div class="col-md-6 mt-3">
+                    <canvas id="co2Chart"></canvas>
                 </div>
             </div>
         </div>
     </div>
-    <script src="/static/script.js"></script>
+
+    <!-- 📌 JavaScript (실시간 데이터 업데이트) -->
+    <script>
+        // 📌 차트 초기화
+        const temperatureCtx = document.getElementById('temperatureChart').getContext('2d');
+        const humidityCtx = document.getElementById('humidityChart').getContext('2d');
+        const co2Ctx = document.getElementById('co2Chart').getContext('2d');
+
+        const temperatureChart = new Chart(temperatureCtx, {
+            type: 'line',
+            data: { labels: [], datasets: [{ label: 'Temperature (°C)', data: [], borderColor: 'red', fill: false }] },
+            options: { responsive: true, scales: { x: { title: { display: true, text: 'Time' } }, y: { title: { display: true, text: '°C' } } } }
+        });
+
+        const humidityChart = new Chart(humidityCtx, {
+            type: 'line',
+            data: { labels: [], datasets: [{ label: 'Humidity (%)', data: [], borderColor: 'blue', fill: false }] },
+            options: { responsive: true, scales: { x: { title: { display: true, text: 'Time' } }, y: { title: { display: true, text: '%' } } } }
+        });
+
+        const co2Chart = new Chart(co2Ctx, {
+            type: 'line',
+            data: { labels: [], datasets: [{ label: 'CO₂ (ppm)', data: [], borderColor: 'green', fill: false }] },
+            options: { responsive: true, scales: { x: { title: { display: true, text: 'Time' } }, y: { title: { display: true, text: 'ppm' } } } }
+        });
+
+        // 📌 5초마다 데이터 가져와서 테이블과 차트 업데이트
+        function fetchData() {
+            fetch('/api/environment')
+                .then(response => response.json())
+                .then(data => {
+                    // 📌 테이블 업데이트
+                    const tableBody = document.getElementById("data-table");
+                    tableBody.innerHTML = ""; // 기존 데이터 삭제
+
+                    data.forEach(row => {
+                        let newRow = tableBody.insertRow();
+                        newRow.innerHTML = `
+                            <td>${row.timestamp}</td>
+                            <td>${row.temperature.toFixed(2)}</td>
+                            <td>${row.humidity.toFixed(2)}</td>
+                            <td>${row.co2 ? row.co2.toFixed(2) : 'N/A'}</td>
+                            <td>${row.density ? row.density.toFixed(2) : 'N/A'}</td>
+                            <td>${row.alcohol ? row.alcohol.toFixed(2) : 'N/A'}</td>
+                            <td>${row.sugar ? row.sugar.toFixed(2) : 'N/A'}</td>
+                        `;
+                    });
+
+                    // 📌 차트 업데이트
+                    const labels = data.map(row => row.timestamp);
+                    const temperatureData = data.map(row => row.temperature);
+                    const humidityData = data.map(row => row.humidity);
+                    const co2Data = data.map(row => row.co2 || 0); // null 값 방지
+
+                    temperatureChart.data.labels = labels;
+                    temperatureChart.data.datasets[0].data = temperatureData;
+                    temperatureChart.update();
+
+                    humidityChart.data.labels = labels;
+                    humidityChart.data.datasets[0].data = humidityData;
+                    humidityChart.update();
+
+                    co2Chart.data.labels = labels;
+                    co2Chart.data.datasets[0].data = co2Data;
+                    co2Chart.update();
+                })
+                .catch(error => console.error("Error fetching data:", error));
+        }
+
+        // 📌 5초마다 데이터 갱신
+        setInterval(fetchData, 5000);
+        fetchData(); // 페이지 로드 시 초기 데이터 로드
+    </script>
 </body>
 </html>
