@@ -3,8 +3,11 @@ from datetime import datetime
 import os
 import sys
 import sqlite3
+import json
+import paho.mqtt.client as mqtt  # 📌 MQTT 라이브러리 추가
 from kalman_filter import KalmanFilter
 import joblib
+import threading  # 📌 쓰레드 관련 라이브러리 추가
 
 # 📌 db 폴더를 Python 경로에 추가하여 내부 파일을 가져올 수 있도록 설정
 sys.path.append(os.path.join(os.path.dirname(__file__), "db"))
@@ -12,19 +15,22 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "db"))
 # 📌 db 폴더에서 데이터베이스 초기화 함수(init_db) 가져오기
 from create_tables import init_db
 
-# Flask 애플리케이션 생성
-app = Flask(__name__)
+# Flask 애플리케이션 생성 (템플릿 폴더 명시)
+app = Flask(__name__, template_folder="templates")
 
 # 📌 데이터베이스 파일 경로 설정
 DB_PATH = os.path.join(os.path.dirname(__file__), "data", "database.db")
 
+# 📌 MQTT 설정 추가
+MQTT_BROKER = "localhost"  # Mosquitto 브로커 주소 (로컬 테스트는 localhost)
+MQTT_PORT = 1883
+MQTT_TOPIC = "smart_brewery/sensor_data"
+
 # 📌 AI 모델 로드
 try:
-    # 'models/ai_model.pkl' 파일에서 AI 모델 로드
     ai_model = joblib.load("models/ai_model.pkl")
     model_loaded = True
 except FileNotFoundError:
-    # AI 모델 파일이 없을 경우 경고 메시지 출력
     print("[WARNING] AI 모델 파일이 'models/ai_model.pkl'에 존재하지 않습니다. 예측 기능은 비활성화됩니다.")
     model_loaded = False
 
@@ -38,29 +44,25 @@ filters = {
 # 📌 데이터베이스 연결 함수
 def get_db_connection():
     """
-    데이터베이스 파일에 연결하는 함수.
-    - 데이터베이스 경로: data/database.db
-    - 반환값: SQLite 연결 객체
+    데이터베이스 연결을 생성하여 반환합니다.
     """
     conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row  # 결과를 딕셔너리 형태로 반환
+    conn.row_factory = sqlite3.Row  # 딕셔너리 형태로 반환
     return conn
 
 # 📌 발효 설정 가져오기
 def get_fermentation_settings():
     """
-    settings 테이블에서 발효 설정 값을 가져오는 함수.
-    - 반환값: 설정값 딕셔너리 (temperature, humidity, co2, sugar)
+    settings 테이블에서 발효 설정 값을 가져옵니다.
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM settings WHERE id = 1')  # ID가 1인 설정값 가져오기
+    cursor.execute('SELECT * FROM settings WHERE id = 1')
     settings = cursor.fetchone()
     conn.close()
 
     if settings:
         return dict(settings)  # 딕셔너리 형태로 반환
-    # 기본 설정값 반환 (값이 없을 경우)
     return {
         "temperature": 25.0,
         "humidity": 50,
@@ -68,46 +70,97 @@ def get_fermentation_settings():
         "sugar": 20.0
     }
 
+# 📌 MQTT 메시지 수신 및 DB 저장
+def on_message(client, userdata, msg):
+    """
+    MQTT 브로커에서 메시지를 수신하면 실행되는 함수.
+    JSON 데이터를 디코딩하여 DB에 저장합니다.
+    """
+    try:
+        data = json.loads(msg.payload.decode("utf-8"))
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        # 칼만 필터 적용
+        temperature = filters["temperature"].update(float(data.get("temperature", 0)))
+        humidity = filters["humidity"].update(float(data.get("humidity", 0)))
+        co2 = filters["co2"].update(float(data.get("co2", 0)))
+        density = data.get("density")
+        alcohol = data.get("alcohol")
+        sugar = data.get("sugar")
+
+        # 데이터베이스 저장
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO environment (timestamp, temperature, humidity, co2, density, alcohol, sugar)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (timestamp, temperature, humidity, co2, density, alcohol, sugar))
+        conn.commit()
+        conn.close()
+
+        print(f"📥 [MQTT] 데이터 저장 완료: {data}")
+
+    except Exception as e:
+        print(f"❌ [MQTT] 데이터 처리 중 오류 발생: {e}")
+
+# 📌 MQTT 클라이언트 설정
+mqtt_client = mqtt.Client()
+mqtt_client.on_message = on_message
+mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
+mqtt_client.subscribe(MQTT_TOPIC)
+
 # 📌 메인 페이지 라우트
 @app.route('/')
 def index():
     """
-    메인 페이지 라우트.
-    - 설정값(settings)을 가져와 index.html에 전달
+    메인 페이지를 렌더링합니다.
     """
-    settings = get_fermentation_settings()
+    settings = get_fermentation_settings()  # 발효 설정 가져오기
     return render_template('index.html', settings=settings)
+
 
 # 📌 환경 데이터 페이지 라우트
 @app.route('/environment')
 def environment():
-    """
-    최근 환경 데이터를 조회하여 environment.html로 렌더링.
-    """
     conn = get_db_connection()
     cursor = conn.cursor()
-    # 최신 20개의 환경 데이터 가져오기
     cursor.execute('SELECT * FROM environment ORDER BY timestamp DESC LIMIT 20')
     rows = cursor.fetchall()
     conn.close()
     return render_template('environment.html', data=[dict(row) for row in rows])
 
+@app.route('/api/environment', methods=['GET'])
+def get_environment_data():
+    """
+    환경 데이터를 JSON 형식으로 반환하는 API.
+    최근 10개 데이터를 가져와서 반환합니다.
+    """
+    conn = get_db_connection()  # SQLite DB 연결
+    cursor = conn.cursor()
+    
+    # 최신 10개 데이터 가져오기
+    cursor.execute('SELECT * FROM environment ORDER BY timestamp DESC LIMIT 10')
+    rows = cursor.fetchall()
+    conn.close()
+
+    # 데이터를 JSON 형식으로 변환
+    data = [dict(row) for row in rows]
+    
+    return jsonify(data)  # JSON 응답 반환
+
+
 # 📌 환경 데이터 저장 API 라우트
 @app.route('/api/data', methods=['POST'])
 def save_data():
-    """
-    환경 데이터를 POST 요청으로 받아 데이터베이스에 저장.
-    - JSON 형식의 데이터를 받아 데이터베이스에 삽입.
-    """
     data = request.json
-    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # 현재 시간 생성
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-    # 칼만 필터를 적용하여 노이즈 제거
+    # 📌 칼만 필터 적용
     temperature = filters["temperature"].update(data.get("temperature"))
     humidity = filters["humidity"].update(data.get("humidity"))
     co2 = filters["co2"].update(data.get("co2"))
 
-    # 데이터베이스에 저장
+    # 📌 데이터베이스 저장
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('''
@@ -117,43 +170,22 @@ def save_data():
     conn.commit()
     conn.close()
 
-    # AI 모델 예측 수행 (모델 로드 상태 확인)
-    if model_loaded:
-        # 예측을 위한 입력 데이터 구성
-        features = [[temperature, humidity, co2, data.get("density"), data.get("alcohol"), data.get("sugar")]]
-        prediction = ai_model.predict(features)
-    else:
-        prediction = [0]  # AI 모델이 없는 경우 기본값 반환
-
-    # 결과 반환
-    return jsonify({"message": "Data saved!", "prediction": prediction[0]}), 200
+    return jsonify({"message": "Data saved!"}), 200
 
 # 📌 발효 페이지 라우트
 @app.route('/fermentation')
 def fermentation():
-    """
-    발효 관련 정보를 렌더링.
-    """
     return render_template('fermentation.html')
 
 # 📌 데이터 로그 페이지 라우트
 @app.route('/data-logs')
 def data_logs():
-    """
-    데이터 로그 정보를 렌더링.
-    """
     return render_template('data_logs.html')
 
 # 📌 설정 페이지 라우트
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
-    """
-    발효 설정 페이지 라우트.
-    - GET: 현재 설정값을 가져와 렌더링.
-    - POST: 설정값을 업데이트하고 저장.
-    """
     if request.method == 'POST':
-        # POST 요청: 설정값 업데이트
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute('''
@@ -168,13 +200,18 @@ def settings():
         ))
         conn.commit()
         conn.close()
-        return redirect(url_for('index'))  # 저장 후 메인 페이지로 리디렉션
+        return redirect(url_for('index'))
 
-    # GET 요청: 현재 설정값 가져오기
     settings = get_fermentation_settings()
     return render_template('settings.html', settings=settings)
 
-# 📌 Flask 애플리케이션 실행
+# 📌 Flask 실행
 if __name__ == '__main__':
-    init_db()  # 데이터베이스 초기화 (테이블 생성)
-    app.run(debug=True)  # 디버그 모드로 실행
+    init_db()  # 데이터베이스 초기화
+    
+    # 📌 MQTT 실행을 별도의 쓰레드에서 실행하여 Flask와 충돌하지 않도록 설정
+    mqtt_thread = threading.Thread(target=mqtt_client.loop_forever)
+    mqtt_thread.daemon = True
+    mqtt_thread.start()
+
+    app.run(debug=True)  # Flask 서버 실행
