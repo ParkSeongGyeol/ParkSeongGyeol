@@ -43,6 +43,10 @@
                     <label for="sugar" class="form-label">Initial Sugar (Brix)</label>
                     <input type="number" class="form-control" id="sugar" name="sugar" value="{{ settings.sugar }}" step="0.1" required>
                 </div>
+                <div class="mb-3">
+                    <label for="alcohol" class="form-label">Target Alcohol Content (%)</label>
+                    <input type="number" class="form-control" id="alcohol" name="alcohol" value="{{ settings.alcohol }}" step="0.1" required>
+                </div>
                 <button type="submit" class="btn btn-primary">Save Settings</button>
             </form>
         </div>

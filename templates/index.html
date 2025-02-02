@@ -29,7 +29,7 @@
 
             <!-- 설정된 값 및 실시간 값 비교 -->
             <div class="row">
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <div class="card text-center">
                         <div class="card-header bg-primary text-white">Target Temperature</div>
                         <div class="card-body">
@@ -37,7 +37,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <div class="card text-center">
                         <div class="card-header bg-secondary text-white">Target Humidity</div>
                         <div class="card-body">
@@ -45,7 +45,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <div class="card text-center">
                         <div class="card-header bg-success text-white">Target CO₂</div>
                         <div class="card-body">
@@ -53,11 +53,21 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <div class="card text-center">
                         <div class="card-header bg-warning text-white">Initial Sugar</div>
                         <div class="card-body">
                             <h3 class="card-title">{{ settings.sugar }} Brix</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 추가된 알코올 값 -->
+                <div class="col-md-2">
+                    <div class="card text-center">
+                        <div class="card-header bg-danger text-white">Target Alcohol</div>
+                        <div class="card-body">
+                            <h3 class="card-title">{{ settings.alcohol }} %</h3>
                         </div>
                     </div>
                 </div>

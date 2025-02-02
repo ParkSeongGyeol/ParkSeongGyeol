@@ -39,14 +39,15 @@ def init_db():
             temperature REAL NOT NULL,
             humidity INTEGER NOT NULL,
             co2 INTEGER NOT NULL,
-            sugar REAL NOT NULL
+            sugar REAL NOT NULL,
+            alcohol REAL NOT NULL DEFAULT 5.0  -- 알코올 농도 기본값 추가
         )
     ''')
 
     # 기본 설정값 삽입 (중복 방지)
     cursor.execute('''
-        INSERT OR IGNORE INTO settings (id, temperature, humidity, co2, sugar)
-        VALUES (1, 25.0, 50, 400, 20.0)
+        INSERT OR IGNORE INTO settings (id, temperature, humidity, co2, sugar, alcohol)
+        VALUES (1, 25.0, 50, 400, 20.0, 5.0)  -- 알코올 초기값 포함
     ''')
 
     conn.commit()

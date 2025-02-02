@@ -24,7 +24,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "data", "database.db")
 # 📌 MQTT 설정 추가
 MQTT_BROKER = "localhost"  # Mosquitto 브로커 주소 (로컬 테스트는 localhost)
 MQTT_PORT = 1883
-MQTT_TOPIC = "smart_brewery/sensor_data"
+MQTT_TOPIC = "smart_Distillery/sensor_data"
 
 # 📌 AI 모델 로드
 try:
@@ -74,40 +74,60 @@ def get_fermentation_settings():
 def on_message(client, userdata, msg):
     """
     MQTT 브로커에서 메시지를 수신하면 실행되는 함수.
-    JSON 데이터를 디코딩하여 DB에 저장합니다.
+    JSON 데이터를 디코딩하여 DB에 중복 여부를 확인한 후 저장합니다.
     """
     try:
-        data = json.loads(msg.payload.decode("utf-8"))
+        # 메시지를 디코딩하고 JSON으로 변환
+        payload = msg.payload.decode("utf-8")
+        print(f"📥 수신된 메시지: {payload}")  # 디버깅용 로그
+        
+        data = json.loads(payload)
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        # 칼만 필터 적용
+        # 각 필드가 None이 아닌지 확인하고 기본값 설정
         temperature = filters["temperature"].update(float(data.get("temperature", 0)))
         humidity = filters["humidity"].update(float(data.get("humidity", 0)))
         co2 = filters["co2"].update(float(data.get("co2", 0)))
-        density = data.get("density")
-        alcohol = data.get("alcohol")
-        sugar = data.get("sugar")
+        density = float(data.get("density", 0)) if data.get("density") else None
+        alcohol = float(data.get("alcohol", 0)) if data.get("alcohol") else None
+        sugar = float(data.get("sugar", 0)) if data.get("sugar") else None
 
-        # 데이터베이스 저장
+        # 데이터베이스 연결
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
+
+        # 중복 데이터 확인: 동일한 타임스탬프와 주요 데이터를 가진 레코드가 있는지 체크
         cursor.execute('''
-            INSERT INTO environment (timestamp, temperature, humidity, co2, density, alcohol, sugar)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ''', (timestamp, temperature, humidity, co2, density, alcohol, sugar))
-        conn.commit()
+            SELECT * FROM environment 
+            WHERE timestamp = ? AND temperature = ? AND humidity = ? AND co2 = ? AND sugar = ?
+        ''', (timestamp, temperature, humidity, co2, sugar))
+        
+        # 중복이 없을 때만 삽입
+        if cursor.fetchone() is None:
+            cursor.execute('''
+                INSERT INTO environment (timestamp, temperature, humidity, co2, density, alcohol, sugar)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (timestamp, temperature, humidity, co2, density, alcohol, sugar))
+            conn.commit()
+            print(f"✅ [MQTT] 데이터 저장 완료: {data}")
+        else:
+            print("⚠️ [MQTT] 중복 데이터 발견: 저장하지 않음")
+
         conn.close()
 
-        print(f"📥 [MQTT] 데이터 저장 완료: {data}")
-
+    except json.JSONDecodeError as json_error:
+        print(f"❌ [MQTT] JSON 디코딩 오류 발생: {json_error}")
     except Exception as e:
         print(f"❌ [MQTT] 데이터 처리 중 오류 발생: {e}")
 
 # 📌 MQTT 클라이언트 설정
 mqtt_client = mqtt.Client()
-mqtt_client.on_message = on_message
-mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
-mqtt_client.subscribe(MQTT_TOPIC)
+
+# 중복 연결 방지: 연결 여부 체크 후 설정
+if not mqtt_client.is_connected():
+    mqtt_client.on_message = on_message
+    mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
+    mqtt_client.subscribe(MQTT_TOPIC)
 
 # 📌 메인 페이지 라우트
 @app.route('/')
@@ -117,7 +137,6 @@ def index():
     """
     settings = get_fermentation_settings()  # 발효 설정 가져오기
     return render_template('index.html', settings=settings)
-
 
 # 📌 환경 데이터 페이지 라우트
 @app.route('/environment')
@@ -147,7 +166,6 @@ def get_environment_data():
     data = [dict(row) for row in rows]
     
     return jsonify(data)  # JSON 응답 반환
-
 
 # 📌 환경 데이터 저장 API 라우트
 @app.route('/api/data', methods=['POST'])
@@ -190,13 +208,14 @@ def settings():
         cursor = conn.cursor()
         cursor.execute('''
             UPDATE settings
-            SET temperature = ?, humidity = ?, co2 = ?, sugar = ?
+            SET temperature = ?, humidity = ?, co2 = ?, sugar = ?, alcohol = ?
             WHERE id = 1
         ''', (
             float(request.form['temperature']),
             int(request.form['humidity']),
             int(request.form['co2']),
-            float(request.form['sugar'])
+            float(request.form['sugar']),
+            float(request.form['alcohol'])
         ))
         conn.commit()
         conn.close()
